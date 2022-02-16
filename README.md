@@ -1,5 +1,15 @@
 ## Work in progress
 
+## running/bulding
+
+```sh
+# run from file
+go run src/main.go -f sample.txt
+
+# build in bin folder
+cd src && go build -o ../bin/grop
+```
+
 ## Usage
 
 | argument       | short | description                                          |
