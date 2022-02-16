@@ -12,8 +12,10 @@
 
 ## TODOs
 
-- [ ] Implement logic from reading from file
+- [x] Implement logic from reading from file
 - [ ] Implement colored highlight
 - [ ] Implement logic for piped output (such as `cat $SOURCE | grep ...`)
-- [ ] Implement line numbers
-- [ ] Implement reversed regex
+- [x] Implement line numbers
+- [ ] Implement search with regex
+- [ ] Implement better error messages/warnings
+- [ ] Implement go routines to search big file, necessary refactoring logic for read file by lines.
