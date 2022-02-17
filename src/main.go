@@ -4,9 +4,20 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
+
+const helpMessage = `
+USAGE:
+	grop -f file.txt -s someword
+
+OPTIONS:
+	-h | Show instructions.  | Optional
+	-f | Target file.        | Required
+	-s | String to look for. | Required
+`
 
 func getFileContent(target string) ([]byte, int, error) {
 	file, err := os.Open(target)
@@ -59,24 +70,25 @@ func parseArgs() (string, string) {
 	return args[0], args[1]
 }
 
-var file = flag.String("f", "", "File to look for string in.")
-var str = flag.String("s", "", "String to be searched.")
+var h = flag.Bool("h", false, "File to look for string in.")
+var f = flag.String("f", "", "File to look for string in.")
+var s = flag.String("s", "", "String to be searched.")
 
 func main() {
 	flag.Parse()
-	if *file == "" {
-		panic("'-f' flag is a required argument")
+	if *h {
+		fmt.Print(helpMessage)
+		return
 	}
-	file := *file
-
-	if *str == "" {
-		panic("'-s' flag is a required argument")
+	if *f == "" || *s == "" {
+		log.Fatal("Flags '-f' and '-s' are both required argument, use -h to get help.")
 	}
-	searchedString := *str
+	file := *f
+	searchedString := *s
 
 	lines, err := readLineByLine(file)
 	if err != nil {
-		panic("deu ruim")
+		log.Fatal("deu ruim")
 	}
 
 	for lineNumber, line := range lines {
@@ -84,15 +96,4 @@ func main() {
 			fmt.Println(lineNumber+1, line)
 		}
 	}
-	// content, size, err := getFileContent(testFile)
-	// if err != nil {
-	// 	panic("deu ruim")
-	// }
-
-	// for i, line := range content {
-	// 	fmt.Println(i, string(line))
-	// }
-	// fmt.Println(content)
-	// fmt.Println("size: ", size)
-
 }
