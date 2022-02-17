@@ -1,13 +1,18 @@
 ## Work in progress
 
-## running/bulding
+## bulding
+
+In a linux environment run:
 
 ```sh
-# run from file
-go run src/main.go -f sample.txt
+make
+```
+## running
 
-# build in bin folder
-cd src && go build -o ../bin/grop
+After building run:
+
+```sh
+bin/grop
 ```
 
 ## Usage
