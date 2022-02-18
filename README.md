@@ -32,5 +32,5 @@ bin/grop
 - [ ] Implement logic for piped output (such as `cat $SOURCE | grep ...`)
 - [x] Implement line numbers
 - [ ] Implement search with regex
-- [ ] Implement better error messages/warnings
+- [x] Implement better error messages/warnings
 - [ ] Implement go routines to search big file, necessary refactoring logic for read file by lines.
