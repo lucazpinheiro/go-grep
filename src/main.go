@@ -19,32 +19,7 @@ OPTIONS:
 	-s | String to look for. | Required
 `
 
-func getFileContent(target string) ([]byte, int, error) {
-	file, err := os.Open(target)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer file.Close()
-
-	// get the file size
-	stat, err := file.Stat()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	linesInFile := int(stat.Size())
-
-	// read the file
-	contentBytes := make([]byte, linesInFile)
-	_, err = file.Read(contentBytes)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return contentBytes, linesInFile, nil
-}
-
-func readLineByLine(target string) ([]string, error) {
+func readFileLineByLine(target string) ([]string, error) {
 	file, err := os.Open(target)
 	if err != nil {
 		return nil, err
@@ -60,14 +35,6 @@ func readLineByLine(target string) ([]string, error) {
 	}
 
 	return text, nil
-}
-
-func parseArgs() (string, string) {
-	args := os.Args[1:]
-	if len(args) < 2 {
-		panic("missing arguments")
-	}
-	return args[0], args[1]
 }
 
 var h = flag.Bool("h", false, "File to look for string in.")
@@ -86,9 +53,9 @@ func main() {
 	file := *f
 	searchedString := *s
 
-	lines, err := readLineByLine(file)
+	lines, err := readFileLineByLine(file)
 	if err != nil {
-		log.Fatal("deu ruim")
+		log.Fatal("Could not read file.")
 	}
 
 	for lineNumber, line := range lines {
