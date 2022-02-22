@@ -4,8 +4,11 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 const helpMessage = `
@@ -36,56 +39,19 @@ func readFileLineByLine(target string) ([]string, error) {
 	return text, nil
 }
 
-var h = flag.Bool("h", false, "File to look for string in.")
-var f = flag.String("f", "", "File to look for string in.")
-var s = flag.String("s", "", "String to be searched.")
-
-func main() {
-	// flag.Parse()
-	// if *h {
-	// 	fmt.Print(helpMessage)
-	// 	return
-	// }
-	// if *f == "" || *s == "" {
-	// 	log.Fatal("Flags '-f' and '-s' are both required argument, use -h to get help.")
-	// }
-	// file := *f
-	// searchedString := *s
-
-	// lines, err := readFileLineByLine(file)
-	// if err != nil {
-	// 	log.Fatal("Could not read file.")
-	// }
-
-	// for lineNumber, line := range lines {
-	// 	if strings.Contains(line, searchedString) {
-	// 		fmt.Println(findAllOccurrencies(line, searchedString))
-
-	// 		fmt.Println(lineNumber+1, line)
-	// 	}
-	// }
-	// color.Yellow("colorido")
-	fmt.Println(applyColor("xxabxxxab", 2, []int{2, 7}))
-}
-
 func applyColor(line string, subStrLen int, positions []int) string {
+	splittedLine := strings.Split(line, "")
 	for _, position := range positions {
-		for i, _ := strings.Split(line, "") {
-			if i != position {
-				continue
-			}
-			
+		charPosition := position
+		for charPosition < subStrLen+position {
+			splittedLine[charPosition] = color.YellowString(splittedLine[charPosition])
+			charPosition += 1
 		}
-		// fmt.Println(position, position+subStrLen)
-		w := strings.Split(line, "")[position : subStrLen+position]
-		fmt.Println(w)
 	}
-	// x := strings.Split(line, "")
-	// fmt.Println(x[2:4])
-	return "a"
+	return strings.Join(splittedLine, "")
 }
 
-func findAllOccurrencies(line, subString string) []int {
+func findAllOccurrences(line, subString string) []int {
 	lineContainsSubString := true
 	subStringLen := len(subString)
 	var positions []int
@@ -107,4 +73,35 @@ func removeSubString(line string, position, subStrLen int) string {
 		splitedLine[i] = " "
 	}
 	return strings.Join(splitedLine, "")
+}
+
+var h = flag.Bool("h", false, "File to look for string in.")
+var f = flag.String("f", "", "File to look for string in.")
+var s = flag.String("s", "", "String to be searched.")
+
+func main() {
+	flag.Parse()
+	if *h {
+		fmt.Print(helpMessage)
+		return
+	}
+	if *f == "" || *s == "" {
+		log.Fatal("Flags '-f' and '-s' are both required argument, use -h to get help.")
+	}
+	file := *f
+	searchedString := *s
+
+	lines, err := readFileLineByLine(file)
+	if err != nil {
+		log.Fatal("Could not read file.")
+	}
+
+	for lineNumber, line := range lines {
+		if strings.Contains(line, searchedString) {
+			positions := findAllOccurrences(line, searchedString)
+			highlightedLine := applyColor(line, len(searchedString), positions)
+
+			fmt.Println(lineNumber+1, highlightedLine)
+		}
+	}
 }
