@@ -28,7 +28,7 @@ bin/grop
 ## TODOs
 
 - [x] Implement logic from reading from file
-- [ ] Implement colored highlight
+- [x] Implement colored highlight
 - [ ] Implement logic for piped output (such as `cat $SOURCE | grep ...`)
 - [x] Implement line numbers
 - [ ] Implement search with regex
