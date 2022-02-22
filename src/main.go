@@ -16,9 +16,10 @@ USAGE:
 	grop -f file.txt -s someword
 
 OPTIONS:
-	-h | Show instructions.  | Optional
-	-f | Target file.        | Required
-	-s | String to look for. | Required
+	-h | Show instructions.                        | Optional
+	-f | Target file.                              | Required
+	-s | String to look for.                       | Required
+	-c | Show total occurrences of searched string | Optional
 `
 
 func readFileLineByLine(target string) ([]string, error) {
@@ -76,6 +77,7 @@ func removeSubString(line string, position, subStrLen int) string {
 }
 
 var h = flag.Bool("h", false, "File to look for string in.")
+var c = flag.Bool("c", false, "Count substring occurrences.")
 var f = flag.String("f", "", "File to look for string in.")
 var s = flag.String("s", "", "String to be searched.")
 
@@ -86,7 +88,7 @@ func main() {
 		return
 	}
 	if *f == "" || *s == "" {
-		log.Fatal("Flags '-f' and '-s' are both required argument, use -h to get help.")
+		log.Fatalf("Flags '-f' and '-s' are both required argument, use -h to get help.")
 	}
 	file := *f
 	searchedString := *s
@@ -96,12 +98,19 @@ func main() {
 		log.Fatal("Could not read file.")
 	}
 
+	count := 0
 	for lineNumber, line := range lines {
 		if strings.Contains(line, searchedString) {
 			positions := findAllOccurrences(line, searchedString)
+			if *c {
+				count += len(positions)
+			}
 			highlightedLine := applyColor(line, len(searchedString), positions)
 
 			fmt.Println(lineNumber+1, highlightedLine)
 		}
+	}
+	if *c {
+		fmt.Printf("%s appers %d times in file.\n", searchedString, count)
 	}
 }

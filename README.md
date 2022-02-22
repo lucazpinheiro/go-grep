@@ -23,6 +23,7 @@ bin/grop
 | --help         | -h    | Print help information                               |
 | --line-numbers | -l    | Optional value to show line numbers or not           |
 | --pattern      | -p    | Regex to search within the file                      |
+| --count        | -c    | Count substring occurrences                          |
 
 
 ## TODOs
