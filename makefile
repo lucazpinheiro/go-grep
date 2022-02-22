@@ -5,7 +5,7 @@ GC := go
 ENTRY := main.go
 
 # Output file
-OUTPUT := dist/grop
+OUTPUT := bin/grop
 
 # Makefile flags
 MAKEFLAGS += "--silent"
