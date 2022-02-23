@@ -19,19 +19,19 @@ bin/grop
 
 | argument       | short | description                                          |
 | -------------- | ----- | ---------------------------------------------------- |
-| --filename     | -f    | Filename to search within the file system (Optional) |
 | --help         | -h    | Print help information                               |
-| --line-numbers | -l    | Optional value to show line numbers or not           |
-| --pattern      | -p    | Regex to search within the file                      |
+| --filename     | -f    | Filename to search within the file system (Optional) |
+| --substring    | -h    | String to look for                                   |
 | --count        | -c    | Count substring occurrences                          |
+| --pattern      | -p    | Regex to search within the file                      |
 
 
 ## TODOs
 
 - [x] Implement logic from reading from file
 - [x] Implement colored highlight
-- [ ] Implement logic for piped output (such as `cat $SOURCE | grep ...`)
 - [x] Implement line numbers
-- [ ] Implement search with regex
 - [x] Implement better error messages/warnings
+- [ ] Implement search with regex
+- [ ] Implement logic for piped output (such as `cat $SOURCE | grep ...`)
 - [ ] Implement go routines to search big file, necessary refactoring logic for read file by lines.
