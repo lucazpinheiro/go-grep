@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log"
-	"os"
+	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
@@ -22,58 +21,53 @@ OPTIONS:
 	-c | Show total occurrences of searched string | Optional
 `
 
-func readFileLineByLine(target string) ([]string, error) {
-	file, err := os.Open(target)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+func readFileLineByLine(target string, callback func([]byte)) ([]string, error) {
+	// file, err := os.Open(target)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
+	// scanner := bufio.NewScanner(file)
+	// scanner.Split(bufio.ScanLines)
 
 	var text []string
-	for scanner.Scan() {
-		text = append(text, scanner.Text())
-	}
+	x := []byte("'Cês vão escutar falar dos cara toda hora")
+	fmt.Println("len x", len(x))
+	fmt.Println("len x string", len(string(x)))
+	callback(x)
+	// for scanner.Scan() {
+	// 	callback(scanner.Bytes())
+	// }
 
 	return text, nil
 }
 
-func applyColor(line string, subStrLen int, positions []int) string {
+func applyColor(line string, positions [][]int) string {
+	fmt.Println(len(line))
 	splittedLine := strings.Split(line, "")
+	fmt.Println(splittedLine)
 	for _, position := range positions {
-		charPosition := position
-		for charPosition < subStrLen+position {
-			splittedLine[charPosition] = color.YellowString(splittedLine[charPosition])
-			charPosition += 1
+		currentPosition := position[0]
+		finalPosition := position[1]
+
+		for currentPosition < finalPosition {
+			if currentPosition >= len(splittedLine) {
+				splittedLine[currentPosition-1] = color.YellowString(splittedLine[currentPosition-1])
+				currentPosition += 1
+				continue
+			}
+			splittedLine[currentPosition] = color.YellowString(splittedLine[currentPosition])
+			if (currentPosition + 1) == len(splittedLine) {
+				currentPosition = finalPosition
+				continue
+			}
+			currentPosition += 1
 		}
+
 	}
+
 	return strings.Join(splittedLine, "")
-}
-
-func findAllOccurrences(line, subString string) []int {
-	lineContainsSubString := true
-	subStringLen := len(subString)
-	var positions []int
-	for lineContainsSubString {
-		subStrPosition := strings.Index(line, subString)
-		if subStrPosition < 0 {
-			lineContainsSubString = false
-			break
-		}
-		positions = append(positions, subStrPosition)
-		line = removeSubString(line, subStrPosition, subStringLen)
-	}
-	return positions
-}
-
-func removeSubString(line string, position, subStrLen int) string {
-	splitedLine := strings.Split(line, "")
-	for i := position; i < position+subStrLen; i++ {
-		splitedLine[i] = " "
-	}
-	return strings.Join(splitedLine, "")
 }
 
 var h = flag.Bool("h", false, "File to look for string in.")
@@ -92,25 +86,16 @@ func main() {
 	}
 	file := *f
 	searchedString := *s
+	r, _ := regexp.Compile(searchedString)
 
-	lines, err := readFileLineByLine(file)
+	_, err := readFileLineByLine(file, func(line []byte) {
+		positions := r.FindAllIndex(line, -1)
+		if len(positions) > 0 {
+			highlightedLine := applyColor(string(line), positions)
+			fmt.Println(highlightedLine)
+		}
+	})
 	if err != nil {
 		log.Fatal("Could not read file.")
-	}
-
-	count := 0
-	for lineNumber, line := range lines {
-		if strings.Contains(line, searchedString) {
-			positions := findAllOccurrences(line, searchedString)
-			if *c {
-				count += len(positions)
-			}
-			highlightedLine := applyColor(line, len(searchedString), positions)
-
-			fmt.Println(lineNumber+1, highlightedLine)
-		}
-	}
-	if *c {
-		fmt.Printf("%s appers %d times in file.\n", searchedString, count)
 	}
 }
