@@ -43,31 +43,39 @@ func readFileLineByLine(target string, callback func([]byte)) ([]string, error) 
 	return text, nil
 }
 
-func applyColor(line string, positions [][]int) string {
-	fmt.Println(len(line))
-	splittedLine := strings.Split(line, "")
-	fmt.Println(splittedLine)
-	for _, position := range positions {
-		currentPosition := position[0]
-		finalPosition := position[1]
-
-		for currentPosition < finalPosition {
-			if currentPosition >= len(splittedLine) {
-				splittedLine[currentPosition-1] = color.YellowString(splittedLine[currentPosition-1])
-				currentPosition += 1
-				continue
-			}
-			splittedLine[currentPosition] = color.YellowString(splittedLine[currentPosition])
-			if (currentPosition + 1) == len(splittedLine) {
-				currentPosition = finalPosition
-				continue
-			}
-			currentPosition += 1
+func applyColor(line []byte, positions [][]int) string {
+	var stringfiedLine []string
+	currentPosition := positions[0]
+	for i, char := range line {
+		stringfiedChar := string(char)
+		if i == currentPosition[0] {
+			stringfiedChar = color.YellowString(stringfiedChar)
 		}
-
+		stringfiedLine = append(stringfiedLine, stringfiedChar)
 	}
+	fmt.Println(strings.Join(stringfiedLine, ""))
+	return ""
+	// for _, position := range positions {
+	// 	currentPosition := position[0]
+	// 	finalPosition := position[1]
 
-	return strings.Join(splittedLine, "")
+	// 	for currentPosition < finalPosition {
+	// 		if currentPosition >= len(splittedLine) {
+	// 			splittedLine[currentPosition-1] = color.YellowString(splittedLine[currentPosition-1])
+	// 			currentPosition += 1
+	// 			continue
+	// 		}
+	// 		splittedLine[currentPosition] = color.YellowString(splittedLine[currentPosition])
+	// 		if (currentPosition + 1) == len(splittedLine) {
+	// 			currentPosition = finalPosition
+	// 			continue
+	// 		}
+	// 		currentPosition += 1
+	// 	}
+
+	// }
+
+	// return strings.Join(splittedLine, "")
 }
 
 var h = flag.Bool("h", false, "File to look for string in.")
@@ -91,7 +99,7 @@ func main() {
 	_, err := readFileLineByLine(file, func(line []byte) {
 		positions := r.FindAllIndex(line, -1)
 		if len(positions) > 0 {
-			highlightedLine := applyColor(string(line), positions)
+			highlightedLine := applyColor(line, positions)
 			fmt.Println(highlightedLine)
 		}
 	})
