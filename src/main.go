@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 
@@ -22,60 +24,56 @@ OPTIONS:
 `
 
 func readFileLineByLine(target string, callback func([]byte)) ([]string, error) {
-	// file, err := os.Open(target)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer file.Close()
+	file, err := os.Open(target)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-	// scanner := bufio.NewScanner(file)
-	// scanner.Split(bufio.ScanLines)
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
 
 	var text []string
-	x := []byte("'Cês vão escutar falar dos cara toda hora")
-	fmt.Println("len x", len(x))
-	fmt.Println("len x string", len(string(x)))
-	callback(x)
-	// for scanner.Scan() {
-	// 	callback(scanner.Bytes())
-	// }
+	for scanner.Scan() {
+		callback(scanner.Bytes())
+	}
 
 	return text, nil
 }
 
-func applyColor(line []byte, positions [][]int) string {
-	var stringfiedLine []string
-	currentPosition := positions[0]
-	for i, char := range line {
-		stringfiedChar := string(char)
-		if i == currentPosition[0] {
-			stringfiedChar = color.YellowString(stringfiedChar)
+func getIntervals(positions [][]int) []int {
+	var intervals []int
+	for _, position := range positions {
+		initialPosition := position[0]
+		finalPosition := position[1]
+		for initialPosition < finalPosition {
+			intervals = append(intervals, initialPosition)
+			initialPosition += 1
 		}
-		stringfiedLine = append(stringfiedLine, stringfiedChar)
 	}
-	fmt.Println(strings.Join(stringfiedLine, ""))
-	return ""
-	// for _, position := range positions {
-	// 	currentPosition := position[0]
-	// 	finalPosition := position[1]
+	return intervals
+}
 
-	// 	for currentPosition < finalPosition {
-	// 		if currentPosition >= len(splittedLine) {
-	// 			splittedLine[currentPosition-1] = color.YellowString(splittedLine[currentPosition-1])
-	// 			currentPosition += 1
-	// 			continue
-	// 		}
-	// 		splittedLine[currentPosition] = color.YellowString(splittedLine[currentPosition])
-	// 		if (currentPosition + 1) == len(splittedLine) {
-	// 			currentPosition = finalPosition
-	// 			continue
-	// 		}
-	// 		currentPosition += 1
-	// 	}
+func intervalContainsPosition(interval []int, position int) bool {
+	for _, elem := range interval {
+		if position == elem {
+			return true
+		}
+	}
+	return false
+}
 
-	// }
+func applyColor(line []byte, intervals []int) string {
+	var stringifiedLine []string
 
-	// return strings.Join(splittedLine, "")
+	for charPosition, char := range string(line) {
+		if intervalContainsPosition(intervals, charPosition) {
+			stringifiedLine = append(stringifiedLine, color.YellowString(string(char)))
+			continue
+		}
+		stringifiedLine = append(stringifiedLine, string(char))
+	}
+	return strings.Join(stringifiedLine, "")
 }
 
 var h = flag.Bool("h", false, "File to look for string in.")
@@ -95,15 +93,23 @@ func main() {
 	file := *f
 	searchedString := *s
 	r, _ := regexp.Compile(searchedString)
-
+	count := 0
 	_, err := readFileLineByLine(file, func(line []byte) {
 		positions := r.FindAllIndex(line, -1)
-		if len(positions) > 0 {
-			highlightedLine := applyColor(line, positions)
+		occurrences := len(positions)
+		if occurrences > 0 {
+			if *c {
+				count += occurrences
+			}
+			intervals := getIntervals(positions)
+			highlightedLine := applyColor(line, intervals)
 			fmt.Println(highlightedLine)
 		}
 	})
 	if err != nil {
 		log.Fatal("Could not read file.")
+	}
+	if *c {
+		fmt.Printf("\nfound %d matchs for patter %s in file.\n", count, searchedString)
 	}
 }
