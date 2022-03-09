@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -14,13 +13,8 @@ import (
 
 const helpMessage = `
 USAGE:
-	grop -f file.txt -s someword
-
-OPTIONS:
-	-h | Show instructions.                        | Optional
-	-f | Target file.                              | Required
-	-s | String to look for.                       | Required
-	-c | Show total occurrences of searched string | Optional
+	grop [pattern] [file]
+	ex: grop someword sample.txt
 `
 
 func readFileLineByLine(target string, callback func([]byte)) ([]string, error) {
@@ -76,40 +70,56 @@ func applyColor(line []byte, intervals []int) string {
 	return strings.Join(stringifiedLine, "")
 }
 
-var h = flag.Bool("h", false, "File to look for string in.")
-var c = flag.Bool("c", false, "Count substring occurrences.")
-var f = flag.String("f", "", "File to look for string in.")
-var s = flag.String("s", "", "String to be searched.")
-
 func main() {
-	flag.Parse()
-	if *h {
+	hasPipedData := false
+
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	if info.Size() > 0 {
+		hasPipedData = true
+	}
+
+	args := os.Args[1:]
+	if !hasPipedData && len(args) < 2 {
+		fmt.Println("Missing args, required both target file and string to search.")
 		fmt.Print(helpMessage)
+		os.Exit(0)
+	}
+
+	if hasPipedData && len(args) < 1 {
+		log.Println("Missing pattern arg.")
+		fmt.Print(helpMessage)
+		os.Exit(0)
+	}
+
+	pattern := args[0]
+	r, _ := regexp.Compile(pattern)
+
+	if hasPipedData {
+		// todo: search for pattern in line from pipe
 		return
 	}
-	if *f == "" || *s == "" {
-		log.Fatalf("Flags '-f' and '-s' are both required argument, use -h to get help.")
+
+	file := args[1]
+
+	if _, err := os.Stat(file); err != nil && !hasPipedData {
+		log.Printf("%s file not found.", file)
+		os.Exit(0)
 	}
-	file := *f
-	searchedString := *s
-	r, _ := regexp.Compile(searchedString)
-	count := 0
-	_, err := readFileLineByLine(file, func(line []byte) {
+
+	_, readingLineErr := readFileLineByLine(file, func(line []byte) {
 		positions := r.FindAllIndex(line, -1)
 		occurrences := len(positions)
 		if occurrences > 0 {
-			if *c {
-				count += occurrences
-			}
 			intervals := getIntervals(positions)
 			highlightedLine := applyColor(line, intervals)
 			fmt.Println(highlightedLine)
 		}
 	})
-	if err != nil {
+	if readingLineErr != nil {
 		log.Fatal("Could not read file.")
-	}
-	if *c {
-		fmt.Printf("\nfound %d matchs for patter %s in file.\n", count, searchedString)
 	}
 }
