@@ -12,9 +12,9 @@ import (
 )
 
 const helpMessage = `
-USAGE:
-	grop [pattern] [file]
-	ex: grop someword sample.txt
+USAGE: grop [pattern] [file]
+	ex: grop func main.go
+		grop '[A-Z][a-z]' sample.txt
 `
 
 func readFileLineByLine(target string, callback func([]byte)) ([]string, error) {
@@ -67,48 +67,31 @@ func applyColor(line []byte, intervals []int) string {
 		}
 		stringifiedLine = append(stringifiedLine, string(char))
 	}
+
 	return strings.Join(stringifiedLine, "")
 }
 
 func main() {
-	hasPipedData := false
-
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		panic(err)
-	}
-
-	if info.Size() > 0 {
-		hasPipedData = true
-	}
-
 	args := os.Args[1:]
-	if !hasPipedData && len(args) < 2 {
-		fmt.Println("Missing args, required both target file and string to search.")
-		fmt.Print(helpMessage)
+	if len(args) < 2 {
+		fmt.Println("Missing args, both pattern and target file are required.")
 		os.Exit(0)
 	}
 
-	if hasPipedData && len(args) < 1 {
-		log.Println("Missing pattern arg.")
-		fmt.Print(helpMessage)
+	if len(args) > 2 {
+		fmt.Println("Too much args were guiven, only pattern and target file are required.")
 		os.Exit(0)
 	}
 
 	pattern := args[0]
-	r, _ := regexp.Compile(pattern)
-
-	if hasPipedData {
-		// todo: search for pattern in line from pipe
-		return
-	}
-
 	file := args[1]
 
-	if _, err := os.Stat(file); err != nil && !hasPipedData {
+	if _, err := os.Stat(file); err != nil {
 		log.Printf("%s file not found.", file)
 		os.Exit(0)
 	}
+
+	r, _ := regexp.Compile(pattern)
 
 	_, readingLineErr := readFileLineByLine(file, func(line []byte) {
 		positions := r.FindAllIndex(line, -1)
