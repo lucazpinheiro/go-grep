@@ -75,11 +75,13 @@ func main() {
 	args := os.Args[1:]
 	if len(args) < 2 {
 		fmt.Println("Missing args, both pattern and target file are required.")
+		fmt.Print(helpMessage)
 		os.Exit(0)
 	}
 
 	if len(args) > 2 {
 		fmt.Println("Too much args were guiven, only pattern and target file are required.")
+		fmt.Print(helpMessage)
 		os.Exit(0)
 	}
 
